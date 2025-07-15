@@ -15,6 +15,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		LICENSE = LICENSE
 		pack.ps1 = pack.ps1
 		README.md = README.md
+		release-note.md = release-note.md
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Albatross.Config.UnitTest", "Albatross.Config.UnitTest\Albatross.Config.UnitTest.csproj", "{7408BA75-1F9A-4333-A349-A94E99DCB9CF}"
