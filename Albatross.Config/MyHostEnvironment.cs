@@ -15,7 +15,7 @@ namespace Albatross.Config {
 		public string EnvironmentName { get => this.environmentSetting.Value; set { } }
 		public string ApplicationName { get => this.programSetting.App; set { } }
 		public string ContentRootPath { get => AppContext.BaseDirectory; set { } }
-		IFileProvider fileProvider = new PhysicalFileProvider(AppContext.BaseDirectory);
+		readonly IFileProvider fileProvider = new PhysicalFileProvider(AppContext.BaseDirectory);
 		public IFileProvider ContentRootFileProvider { get => fileProvider; set { } }
 	}
 }

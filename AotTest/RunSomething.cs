@@ -10,9 +10,11 @@ namespace AotTest {
 	}
 	public class RunSomething : BaseHandler<RunSomethingOptions> {
 		private readonly MyConfig config;
+		private readonly ILogger logger;
 
-		public RunSomething(MyConfig config, IOptions<RunSomethingOptions> options, ILogger logger) : base(options, logger) {
+		public RunSomething(MyConfig config, IOptions<RunSomethingOptions> options, ILogger logger) : base(options) {
 			this.config = config;
+			this.logger = logger;
 		}
 
 		public override int Invoke(InvocationContext context) {

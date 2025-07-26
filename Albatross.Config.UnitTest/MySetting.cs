@@ -11,9 +11,8 @@ namespace Albatross.Config.UnitTest {
 	public class MySetting : ConfigBase {
 		public string? Name { get; set; }
 		public GameData? Data { get; set; }
-		public override string Key => "my";
 
-		public MySetting(IConfiguration configuration) : base(configuration) {
+		public MySetting(IConfiguration configuration) : base(configuration, "my") {
 		}
 	}
 }

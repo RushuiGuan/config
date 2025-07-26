@@ -3,11 +3,10 @@ using System.Reflection;
 
 namespace Albatross.Config {
 	public class ProgramSetting : ConfigBase {
-		public override string Key => "program";
 		public const string WindowsServiceManager = "windows";
 		public const string SystemDServiceManager = "systemd";
 
-		public ProgramSetting(IConfiguration configuration) : base(configuration) {
+		public ProgramSetting(IConfiguration configuration) : base(configuration, "program") {
 		}
 
 		/// <summary>

@@ -2,8 +2,7 @@
 
 namespace Albatross.Config.UnitTest {
 	public class ChangeTest : ConfigBase {
-		public ChangeTest(IConfiguration configuration) : base(configuration) {
+		public ChangeTest(IConfiguration configuration) : base(configuration, "change-test") {
 		}
-		public override string Key => "change-test";
 	}
 }

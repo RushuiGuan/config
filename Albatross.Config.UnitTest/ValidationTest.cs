@@ -3,8 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Albatross.Config.UnitTest {
 	public class ValidationTest : ConfigBase {
-		public override string Key => "validation-test1";
-		public ValidationTest(IConfiguration configuration) : base(configuration) {
+		public ValidationTest(IConfiguration configuration) : base(configuration, "validation-test1") {
 		}
 		[Required]
 		public string Name { get; } = null!;

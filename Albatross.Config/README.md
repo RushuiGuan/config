@@ -32,11 +32,10 @@ Here is an example of appsettings.json file and the matching config class.
 ```
 ```csharp
 public class MyConfig : ConfigBase {
-	public MyConfig(IConfiguration configuration) {
+	public MyConfig(IConfiguration configuration) : base(configuration, "my-config") {
 		this.MsGraphicEndPoint = configuration.GetRequiredEndPoint("ms-graph");
 		this.MyConnectionString = configuration.GetRequiredConnectionString("azure-db");
 	}
-	public override Key => "my-config";
 	[Required]
 	public string ConfigData { get; }
 	public string MsGraphicEndPoint { get; }
