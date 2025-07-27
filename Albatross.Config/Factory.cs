@@ -4,7 +4,11 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 
 namespace Albatross.Config {
+#if NET6_0_OR_GREATER
 	internal static class Factory<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]T> where T : ConfigBase {
+#else
+	internal static class Factory<T> where T : ConfigBase {
+#endif
 		static readonly Func<IConfiguration, T> func;
 
 		static Factory() {
