@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Albatross.Config {
 	// the class name Extension cannot be renamed to Extensions (standard) because of backward compability reason.
@@ -77,7 +76,7 @@ namespace Albatross.Config {
 		/// <param name="name"></param>
 		/// <param name="ensureTrailingSlash"></param>
 		/// <returns></returns>
-		public static string? GetEndPoint(this IConfiguration configuration, string name, bool ensureTrailingSlash = true) {
+		public static string? GetEndPoint(this IConfiguration configuration, string name, bool ensureTrailingSlash) {
 			string? value = configuration.GetSection($"endpoints:{name}")?.Value;
 			if (value != null && !value.EndsWith(Slash) && ensureTrailingSlash) {
 				value = value + Slash;
@@ -86,7 +85,7 @@ namespace Albatross.Config {
 		}
 
 
-		public static string GetRequiredEndPoint(this IConfiguration configuration, string name, bool ensureTrailingSlash = true) {
+		public static string GetRequiredEndPoint(this IConfiguration configuration, string name, bool ensureTrailingSlash) {
 			string section = $"endpoints:{name}";
 			string? value = configuration.GetSection(section)?.Value;
 			if (value != null && !value.EndsWith(Slash) && ensureTrailingSlash) {
@@ -99,5 +98,14 @@ namespace Albatross.Config {
 			string? value = configuration.GetConnectionString(name);
 			return value ?? throw new ConfigurationException($"connectionStrings:{name}");
 		}
+
+		/// <summary>
+		/// this methods exist for backward compatibility
+		/// </summary>
+		public static string? GetEndPoint(this IConfiguration configuration, string name) => GetEndPoint(configuration, name, true);
+		/// <summary>
+		/// this methods exist for backward compatibility
+		/// </summary>
+		public static string GetRequiredEndPoint(this IConfiguration configuration, string name) => GetRequiredEndPoint(configuration, name, true);
 	}
 }
