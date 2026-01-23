@@ -8,11 +8,6 @@ Simplified configuration setup for your .Net applications.
 * Validate configuration data using data annotation attributes in the System.DataAnnotation namespace or implement your own validation.
 * Custom implementation of IHostEnvironment to save us from changing prod data by accident.  See [HELP!  My developers are also DBAs](../docs/hosting-env.md).
 
-## Related Articles
-* [The Comparison between Albatross.Config and the default IOptions<> Setup](../docs/the-comparison.md)
-* [.Net Hosting Environments](../docs/hosting-env.md)
-* [Use of Environment Variables and Command Line Parameters](../docs/hosting-env.md)
-
 ## Quick Start
 `Albatross.Config` allows users to create strong typed config classes to manage the configuration data.  The config class requires a base class of `Albatross.Config.ConfigBase` and a constructor with a single parameter of type `Microsoft.Extensions.Configuration.IConfiguration`.
 
@@ -54,3 +49,8 @@ Once the config class is registered using DI, it can be injected directly to cla
 		return services;
 	}
 ```
+
+## Related Articles
+* [The Comparison between Albatross.Config and the default IOptions<> Setup](../docs/the-comparison.md)
+* [.Net Hosting Environments](../docs/hosting-env.md)
+* [Use of Environment Variables and Command Line Parameters](../docs/hosting-env.md)
