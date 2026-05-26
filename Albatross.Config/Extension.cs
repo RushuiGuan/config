@@ -16,12 +16,8 @@ namespace Albatross.Config {
 		/// <param name="services">The ServiceCollection instance</param>
 		/// <param name="singleton"></param>
 		/// <returns>The service collection instance</returns>
-#if NET6_0_OR_GREATER
-		public static IServiceCollection AddConfig<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)]T>
-			(this IServiceCollection services, bool singleton = true) where T : ConfigBase {
-#else
-		public static IServiceCollection AddConfig<T>(this IServiceCollection services, bool singleton = true) where T : ConfigBase {
-#endif
+		public static IServiceCollection AddConfig<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)] T>(this IServiceCollection services,
+			bool singleton = true) where T : ConfigBase {
 			if (singleton) {
 				services.TryAddSingleton<T>(provider => Factory<T>.CreateAndValidate(provider.GetRequiredService<IConfiguration>()));
 			} else {
@@ -38,12 +34,9 @@ namespace Albatross.Config {
 		/// <typeparam name="TInterface"></typeparam>
 		/// <typeparam name="T"></typeparam>
 		/// <returns></returns>
-#if NET6_0_OR_GREATER		
-		public static IServiceCollection AddConfig<TInterface, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)] T>
-			(this IServiceCollection services, bool singleton = true)
-#else
-		public static IServiceCollection AddConfig<TInterface, T>(this IServiceCollection services, bool singleton = true)
-#endif
+		public static IServiceCollection AddConfig<TInterface, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)] T>(
+			this IServiceCollection services,
+			bool singleton = true)
 			where T : ConfigBase, TInterface
 			where TInterface : class {
 			if (singleton) {
@@ -108,5 +101,11 @@ namespace Albatross.Config {
 		/// this methods exist for backward compatibility
 		/// </summary>
 		public static string GetRequiredEndPoint(this IConfiguration configuration, string name) => GetRequiredEndPoint(configuration, name, true);
+
+		public static IApplicationPath GetApplicationPath(string[] args, bool useSystemPath, string[] subFolders, string appPrefix) {
+			var builder = new ConfigurationBuilder();
+			builder.AddEnvironmentVariables().AddCommandLine(args);
+			return new ApplicationPath(useSystemPath, subFolders, builder.Build(), appPrefix);
+		}
 	}
 }
