@@ -3,18 +3,21 @@ using System;
 using System.IO;
 
 namespace Albatross.Config {
+
 	public interface IApplicationPath {
 		bool IsSystemPath { get; }
 		string DataRoot { get; }
 		string ConfigRoot { get; }
 		string LogRoot { get; }
+		void Init();
 	}
+
 	public class ApplicationPath : IApplicationPath {
 		public static string GetSystemRootPath() {
-			if (OperatingSystem.IsWindows()) {
+			if (System.OperatingSystem.IsWindows()) {
 				// windows: c:\ProgramData
 				return Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
-			} else if (OperatingSystem.IsMacOS()) {
+			} else if (System.OperatingSystem.IsMacOS()) {
 				// mac: /Library/Application Support
 				return Path.Join("/Library", "Application Support");
 			} else {
@@ -22,8 +25,9 @@ namespace Albatross.Config {
 				return Path.Join("/var", "lib");
 			}
 		}
+
 		public static string GetUserRootPath() {
-			if (OperatingSystem.IsWindows()) {
+			if (System.OperatingSystem.IsWindows()) {
 				// windows: ~\AppData\Local
 				return Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
 			} else {
@@ -32,6 +36,7 @@ namespace Albatross.Config {
 				return Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
 			}
 		}
+
 		public static string GetDefaultPath(bool useSystemPath, string[] subFolders) {
 			if (useSystemPath) {
 				return Path.Join([GetSystemRootPath(), .. subFolders]);
@@ -39,6 +44,7 @@ namespace Albatross.Config {
 				return Path.Join([GetUserRootPath(), .. subFolders]);
 			}
 		}
+
 		/// <summary>
 		/// Converts a path to an absolute path. Relative paths are resolved against <see cref="Environment.CurrentDirectory"/>.
 		/// This is appropriate for CLI applications where the working directory is set by the caller in the terminal.
@@ -70,10 +76,12 @@ namespace Albatross.Config {
 		/// <c>myapp:configRoot</c>, and <c>myapp:logRoot</c>). Overrides can be passed as environment variables or command-line arguments.
 		/// </param>
 		/// <param name="commandlineArgs">The command-line arguments passed to the application (i.e. <c>args</c> from <c>Main</c>).</param>
-		public ApplicationPath(bool useSystemPath, string[] subFolders, string sectionKey, string[] commandlineArgs) {
+		public ApplicationPath(bool useSystemPath, string[] subFolders, string sectionKey, string[] commandlineArgs)
+			: this(new ConfigurationBuilder().AddEnvironmentVariables().AddCommandLine(commandlineArgs).Build(), useSystemPath, subFolders, sectionKey) {
+		}
+
+		public ApplicationPath(IConfiguration configuration, bool useSystemPath, string[] subFolders, string sectionKey) {
 			this.IsSystemPath = useSystemPath;
-			var builder = new ConfigurationBuilder().AddEnvironmentVariables().AddCommandLine(commandlineArgs);
-			var configuration = builder.Build();
 			var value = configuration.GetSection($"{sectionKey}:dataRoot").Value;
 			DataRoot = string.IsNullOrEmpty(value) ? GetDefaultPath(useSystemPath, [..subFolders, "data"]) : GetAbsolutePath(value);
 			value = configuration.GetSection($"{sectionKey}:configRoot").Value;
@@ -82,18 +90,26 @@ namespace Albatross.Config {
 			LogRoot = string.IsNullOrEmpty(value) ? GetDefaultPath(useSystemPath, [..subFolders, "log"]) : GetAbsolutePath(value);
 		}
 
+		public bool IsSystemPath { get; }
+		public string DataRoot { get; }
+		public string ConfigRoot { get; }
+		public string LogRoot { get; }
 
-		public bool IsSystemPath {
-			get;
+		private void EnsureDirectory(string path) {
+			try {
+				Directory.CreateDirectory(path);
+				if (!IsSystemPath && !OperatingSystem.IsWindows()) {
+					File.SetUnixFileMode(path, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+				}
+			} catch (UnauthorizedAccessException ex) when (IsSystemPath) {
+				throw new UnauthorizedAccessException($"'{path}' is not accessible", ex);
+			}
 		}
-		public string DataRoot {
-			get;
-		}
-		public string ConfigRoot {
-			get;
-		}
-		public string LogRoot {
-			get;
+
+		public void Init() {
+			EnsureDirectory(this.DataRoot);
+			EnsureDirectory(this.ConfigRoot);
+			EnsureDirectory(this.LogRoot);
 		}
 	}
 }
