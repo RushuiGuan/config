@@ -101,11 +101,5 @@ namespace Albatross.Config {
 		/// this methods exist for backward compatibility
 		/// </summary>
 		public static string GetRequiredEndPoint(this IConfiguration configuration, string name) => GetRequiredEndPoint(configuration, name, true);
-
-		public static IApplicationPath GetApplicationPath(string[] args, bool useSystemPath, string[] subFolders, string appPrefix) {
-			var builder = new ConfigurationBuilder();
-			builder.AddEnvironmentVariables().AddCommandLine(args);
-			return new ApplicationPath(useSystemPath, subFolders, builder.Build(), appPrefix);
-		}
 	}
 }

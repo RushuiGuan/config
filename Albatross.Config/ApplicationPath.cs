@@ -52,14 +52,33 @@ namespace Albatross.Config {
 			}
 		}
 
-		public ApplicationPath(bool useSystemPath, string[] subFolders, IConfiguration configuration, string appPrefix) {
+		/// <summary>
+		/// Creates an <see cref="ApplicationPath"/> by reading path overrides from environment variables and command-line arguments.
+		/// If a root path is not specified, it is derived from the OS-appropriate base directory combined with <paramref name="subFolders"/>.
+		/// </summary>
+		/// <param name="useSystemPath">
+		/// When <c>true</c>, paths are rooted under the system-wide data directory (e.g. <c>C:\ProgramData</c>, <c>/var/lib</c>).
+		/// When <c>false</c>, paths are rooted under the current user's data directory (e.g. <c>%LOCALAPPDATA%</c>, <c>~/.config</c>).
+		/// Note that system paths typically require elevated permissions to write.
+		/// </param>
+		/// <param name="subFolders">
+		/// Sub-folder segments appended to the OS base directory to form the default root (e.g. <c>["mycompany", "myapp"]</c>).
+		/// Each of <c>data</c>, <c>config</c>, and <c>log</c> is then appended as the final segment.
+		/// </param>
+		/// <param name="sectionKey">
+		/// The configuration section key used to look up path overrides (e.g. <c>"myapp"</c> maps to <c>myapp:dataRoot</c>,
+		/// <c>myapp:configRoot</c>, and <c>myapp:logRoot</c>). Overrides can be passed as environment variables or command-line arguments.
+		/// </param>
+		/// <param name="commandlineArgs">The command-line arguments passed to the application (i.e. <c>args</c> from <c>Main</c>).</param>
+		public ApplicationPath(bool useSystemPath, string[] subFolders, string sectionKey, string[] commandlineArgs) {
 			this.IsSystemPath = useSystemPath;
-
-			var value = configuration.GetSection($"{appPrefix}:dataRoot").Value;
+			var builder = new ConfigurationBuilder().AddEnvironmentVariables().AddCommandLine(commandlineArgs);
+			var configuration = builder.Build();
+			var value = configuration.GetSection($"{sectionKey}:dataRoot").Value;
 			DataRoot = string.IsNullOrEmpty(value) ? GetDefaultPath(useSystemPath, [..subFolders, "data"]) : GetAbsolutePath(value);
-			value = configuration.GetSection($"{appPrefix}:configRoot").Value;
+			value = configuration.GetSection($"{sectionKey}:configRoot").Value;
 			ConfigRoot = string.IsNullOrEmpty(value) ? GetDefaultPath(useSystemPath, [..subFolders, "config"]) : GetAbsolutePath(value);
-			value = configuration.GetSection($"{appPrefix}:logRoot").Value;
+			value = configuration.GetSection($"{sectionKey}:logRoot").Value;
 			LogRoot = string.IsNullOrEmpty(value) ? GetDefaultPath(useSystemPath, [..subFolders, "log"]) : GetAbsolutePath(value);
 		}
 
