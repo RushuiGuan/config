@@ -1,18 +1,18 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project>
 	<PropertyGroup>
 		<Version>8.0.0</Version>
 		<LangVersion>Latest</LangVersion>
 		<Nullable>enable</Nullable>
 		<RepositoryUrl>https://github.com/RushuiGuan/config</RepositoryUrl>
-		<PackageProjectUrl>https://rushuiguan.github.io/config</PackageProjectUrl>
+		<PackageProjectUrl>https://rushuiguan.github.io/config/</PackageProjectUrl>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageIcon>icon.png</PackageIcon>
 		<Authors>Rushui Guan</Authors>
 		<PackageTags>
 			configuration;dotnet;dependency-injection;appsettings;strongly-typed;application-path</PackageTags>
-		<PackageReleaseNotes>https://rushuiguan.github.io/config/release-notes</PackageReleaseNotes>
+		<PackageReleaseNotes>See https://rushuiguan.github.io/config/release-notes</PackageReleaseNotes>
 		<!-- SourceLink Configuration -->
 		<PublishRepositoryUrl>true</PublishRepositoryUrl>
 		<IncludeSymbols>true</IncludeSymbols>
