@@ -1,8 +1,8 @@
-﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration;
 using Xunit;
 
 namespace Albatross.Config.UnitTest {
-	public class TestFakeConfiguration {
+	public class AnyConfiguration_GetSection {
 		IConfigurationSection? Get(IConfiguration config, string path) {
 			var keys = path.Split(':');
 			IConfigurationSection? section = null;
@@ -20,14 +20,14 @@ namespace Albatross.Config.UnitTest {
 		[InlineData("", null)]
 		[InlineData("a:b", "any")]
 		[InlineData("ConnectionStrings:a", "any")]
-		public void TestAnyConfiguration(string path, string? expectedValue) {
+		public void UnsetPath_ReturnsAny(string path, string? expectedValue) {
 			var config = new AnyConfiguration();
 			var section = Get(config, path);
 			Assert.Equal(expectedValue, section?.Value);
 		}
 
 		[Fact]
-		public void TestAnyConfigurationCalls() {
+		public void ExtensionMethods_ReturnAnyValue() {
 			var config = new AnyConfiguration();
 			Assert.Equal(AnyConfiguration.Any, config.GetRequiredConnectionString("a"));
 			Assert.Equal(AnyConfiguration.Any, config.GetConnectionString("a"));
@@ -46,7 +46,7 @@ namespace Albatross.Config.UnitTest {
 		[Theory]
 		[InlineData("ConnectionStrings:a", "aaa", "ConnectionStrings:b", "any")]
 		[InlineData("ConnectionStrings:a", "aaa", "ConnectionStrings:a", "aaa")]
-		public void TestSettingAnyConfiguration(string settingPath, string settingValue, string gettingPath, string expectedValue) {
+		public void SetPath_OverridesForMatchingKey(string settingPath, string settingValue, string gettingPath, string expectedValue) {
 			var config = new AnyConfiguration();
 			config[settingPath] = settingValue;
 			Assert.Equal(expectedValue, config[gettingPath]);
