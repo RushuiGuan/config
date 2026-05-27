@@ -2,16 +2,26 @@
 <Project>
 	<PropertyGroup>
 		<Version>8.0.0</Version>
-		<AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
-		<ProduceReferenceAssembly>True</ProduceReferenceAssembly>
-		<EnableWindowsTargeting>True</EnableWindowsTargeting>
 		<LangVersion>Latest</LangVersion>
 		<Nullable>enable</Nullable>
 		<RepositoryUrl>https://github.com/RushuiGuan/config</RepositoryUrl>
-		<RepositoryProjectRoot>$(RepositoryUrl)/tree/main</RepositoryProjectRoot>
-		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+		<PackageProjectUrl>https://rushuiguan.github.io/config/</PackageProjectUrl>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageIcon>icon.png</PackageIcon>
 		<Authors>Rushui Guan</Authors>
+		<PackageTags>configuration;dotnet;dependency-injection;appsettings;strongly-typed;application-path</PackageTags>
+		<PackageReleaseNotes>https://rushuiguan.github.io/config/release-notes</PackageReleaseNotes>
+		<!-- SourceLink Configuration -->
+		<PublishRepositoryUrl>true</PublishRepositoryUrl>
+		<IncludeSymbols>true</IncludeSymbols>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+		<RepositoryType>git</RepositoryType>
 	</PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
 </Project>
