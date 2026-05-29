@@ -1,0 +1,15 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path=".gitignore" />
+    <File Path=".projects" />
+    <File Path="Directory.Build.props" />
+    <File Path="icon.png" />
+    <File Path="LICENSE" />
+    <File Path="README.md" />
+    <File Path="release-note.md" />
+  </Folder>
+  <Project Path="Albatross.Config.UnitTest/Albatross.Config.UnitTest.csproj" />
+  <Project Path="Albatross.Config/Albatross.Config.csproj" />
+  <Project Path="AotTest/AotTest.csproj" />
+</Solution>

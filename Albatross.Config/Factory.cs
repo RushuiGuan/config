@@ -4,11 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 
 namespace Albatross.Config {
-#if NET6_0_OR_GREATER
-	internal static class Factory<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]T> where T : ConfigBase {
-#else
-	internal static class Factory<T> where T : ConfigBase {
-#endif
+	internal static class Factory<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T> where T : ConfigBase {
 		static readonly Func<IConfiguration, T> func;
 
 		static Factory() {
@@ -23,7 +19,7 @@ namespace Albatross.Config {
 			func = lambda.Compile();
 		}
 		public static T CreateAndValidate(IConfiguration configuration) {
-			var t =  func(configuration);
+			var t = func(configuration);
 			t.Validate();
 			return t;
 		}

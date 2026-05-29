@@ -8,4 +8,4 @@ The .Net hosting environment variable (`DOTNET_ENVIRONMENT` or `ASPNETCORE_ENVIR
 
 While this explaination are valid for contain use cases, the "security benefits" are rather small.  **The risk of updating production data by accident is very high for small to medium size enterprises where developers do have more rights than they are supposed to.**
 
-`Albatross.Config` has a [custom implementation](../Albatross.Config/MyHostEnvironment.cs) for `IHostEnvironment` interface so that it would return "Unknown" when hosting environmental variable is not set.  The same behavior goes to the [EnvironmentSetting](../Albatross.Config/EnvironmentSetting.cs) class that serves a similar purpose.
+`Albatross.Config` has a [custom implementation](https://github.com/RushuiGuan/config/blob/main/Albatross.Config/MyHostEnvironment.cs) for `IHostEnvironment` interface so that it would return "Unknown" when hosting environmental variable is not set.  The same behavior goes to the [EnvironmentSetting](https://github.com/RushuiGuan/config/blob/main/Albatross.Config/EnvironmentSetting.cs) class that serves a similar purpose.
