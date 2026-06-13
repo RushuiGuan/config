@@ -53,6 +53,25 @@ namespace Albatross.Config {
 			=> !configuration.GetValue<bool>($"{sectionKey}:userMode");
 
 		/// <summary>
+		/// Reads a configuration value for one of the path overrides (<c>configRoot</c>, <c>dataRoot</c>, <c>logRoot</c>).
+		/// When <paramref name="subSectionKey"/> is supplied, the value is read from the nested section
+		/// (<c>{sectionKey}:{subSectionKey}:{name}</c>); otherwise it is read directly from <c>{sectionKey}:{name}</c>.
+		/// </summary>
+		/// <param name="subSectionKey">
+		/// An optional nested section under <paramref name="sectionKey"/> that groups the path overrides. This nesting applies
+		/// only to the folder overrides — <c>userMode</c> is always read from <c>{sectionKey}:userMode</c>.
+		/// </param>
+		public static string? GetConfigValue(IConfiguration configuration, string sectionKey, string? subSectionKey, string name) {
+			string path;
+			if (string.IsNullOrEmpty(subSectionKey)) {
+				path = $"{sectionKey}:{name}";
+			} else {
+				path = $"{sectionKey}:{subSectionKey}:{name}";
+			}
+			return configuration.GetSection(path).Value;
+		}
+
+		/// <summary>
 		/// Converts a path to an absolute path. Relative paths are resolved against <see cref="Environment.CurrentDirectory"/>.
 		/// This is appropriate for CLI applications where the working directory is set by the caller in the terminal.
 		/// Avoid using relative paths in services (Windows Service, systemd) where the working directory is unpredictable.
@@ -82,18 +101,25 @@ namespace Albatross.Config {
 		/// The configuration section key used to look up path overrides (e.g. <c>"myapp"</c> maps to <c>myapp:dataRoot</c>,
 		/// <c>myapp:configRoot</c>, and <c>myapp:logRoot</c>). Overrides can be passed as environment variables or command-line arguments.
 		/// </param>
+		/// <param name="subSectionKey">
+		/// An optional nested section under <paramref name="sectionKey"/> that groups the path overrides (e.g. <c>"myapp"</c> with
+		/// <c>"paths"</c> maps to <c>myapp:paths:dataRoot</c>). When <c>null</c> or empty, overrides are read directly under
+		/// <paramref name="sectionKey"/>. This nesting applies only to the folder overrides; it does not affect <c>userMode</c>.
+		/// </param>
 		/// <param name="commandlineArgs">The command-line arguments passed to the application (i.e. <c>args</c> from <c>Main</c>).</param>
-		public ApplicationPath(bool useSystemPath, string[] subFolders, string sectionKey, string[] commandlineArgs)
-			: this(new ConfigurationBuilder().AddEnvironmentVariables().AddCommandLine(commandlineArgs).Build(), useSystemPath, subFolders, sectionKey) {
+		public ApplicationPath(bool useSystemPath, string[] subFolders, string sectionKey, string? subSectionKey, string[] commandlineArgs)
+			: this(new ConfigurationBuilder().AddEnvironmentVariables().AddCommandLine(commandlineArgs).Build(), useSystemPath, subFolders, sectionKey, subSectionKey) {
 		}
 
-		public ApplicationPath(IConfiguration configuration, bool useSystemPath, string[] subFolders, string sectionKey) {
+		public ApplicationPath(IConfiguration configuration, bool useSystemPath, string[] subFolders, string sectionKey, string? subSectionKey) {
 			this.IsSystemPath = useSystemPath;
-			var value = configuration.GetSection($"{sectionKey}:dataRoot").Value;
-			DataRoot = string.IsNullOrEmpty(value) ? GetDefaultPath(useSystemPath, [..subFolders, "data"]) : GetAbsolutePath(value);
-			value = configuration.GetSection($"{sectionKey}:configRoot").Value;
+			var value = GetConfigValue(configuration, sectionKey, subSectionKey, "configRoot");
 			ConfigRoot = string.IsNullOrEmpty(value) ? GetDefaultPath(useSystemPath, [..subFolders, "config"]) : GetAbsolutePath(value);
-			value = configuration.GetSection($"{sectionKey}:logRoot").Value;
+
+			value = GetConfigValue(configuration, sectionKey, subSectionKey, "dataRoot");
+			DataRoot = string.IsNullOrEmpty(value) ? GetDefaultPath(useSystemPath, [..subFolders, "data"]) : GetAbsolutePath(value);
+
+			value = GetConfigValue(configuration, sectionKey, subSectionKey, "logRoot");
 			LogRoot = string.IsNullOrEmpty(value) ? GetDefaultPath(useSystemPath, [..subFolders, "log"]) : GetAbsolutePath(value);
 		}
 
@@ -109,7 +135,13 @@ namespace Albatross.Config {
 		/// The configuration section key used to look up <c>userMode</c> and the path overrides
 		/// (<c>dataRoot</c>, <c>configRoot</c>, <c>logRoot</c>).
 		/// </param>
-		public ApplicationPath(IConfiguration configuration, string[] subFolders, string sectionKey) : this(configuration, UseSystemPath(configuration, sectionKey), subFolders, sectionKey) {
+		/// <param name="subSectionKey">
+		/// An optional nested section under <paramref name="sectionKey"/> that groups the path overrides (e.g. <c>"myapp"</c> with
+		/// <c>"paths"</c> maps to <c>myapp:paths:dataRoot</c>). When <c>null</c> or empty, overrides are read directly under
+		/// <paramref name="sectionKey"/>. This nesting applies only to the folder overrides; <c>userMode</c> is always read from <c>{sectionKey}:userMode</c>.
+		/// </param>
+		public ApplicationPath(IConfiguration configuration, string[] subFolders, string sectionKey, string? subSectionKey)
+			: this(configuration, UseSystemPath(configuration, sectionKey), subFolders, sectionKey, subSectionKey) {
 		}
 
 		/// <summary>
@@ -124,9 +156,14 @@ namespace Albatross.Config {
 		/// The configuration section key used to look up <c>userMode</c> and the path overrides
 		/// (<c>dataRoot</c>, <c>configRoot</c>, <c>logRoot</c>).
 		/// </param>
+		/// <param name="subSectionKey">
+		/// An optional nested section under <paramref name="sectionKey"/> that groups the path overrides (e.g. <c>"myapp"</c> with
+		/// <c>"paths"</c> maps to <c>myapp:paths:dataRoot</c>). When <c>null</c> or empty, overrides are read directly under
+		/// <paramref name="sectionKey"/>. This nesting applies only to the folder overrides; <c>userMode</c> is always read from <c>{sectionKey}:userMode</c>.
+		/// </param>
 		/// <param name="commandlineArgs">The command-line arguments passed to the application (i.e. <c>args</c> from <c>Main</c>).</param>
-		public ApplicationPath(string[] subFolders, string sectionKey, string[] commandlineArgs)
-			: this(new ConfigurationBuilder().AddEnvironmentVariables().AddCommandLine(commandlineArgs).Build(), subFolders, sectionKey) {
+		public ApplicationPath(string[] subFolders, string sectionKey, string? subSectionKey, string[] commandlineArgs)
+			: this(new ConfigurationBuilder().AddEnvironmentVariables().AddCommandLine(commandlineArgs).Build(), subFolders, sectionKey, subSectionKey) {
 		}
 
 		public bool IsSystemPath { get; }
