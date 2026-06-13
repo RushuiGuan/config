@@ -3,7 +3,6 @@ using System;
 using System.IO;
 
 namespace Albatross.Config {
-
 	public interface IApplicationPath {
 		bool IsSystemPath { get; }
 		string DataRoot { get; }
@@ -44,6 +43,14 @@ namespace Albatross.Config {
 				return Path.Join([GetUserRootPath(), .. subFolders]);
 			}
 		}
+
+		/// <summary>
+		/// Determines whether paths should be rooted under the system-wide data directory by reading the
+		/// <c>{sectionKey}:userMode</c> setting. System path is the default: when <c>userMode</c> is absent
+		/// or <c>false</c>, this returns <c>true</c>; set <c>userMode</c> to <c>true</c> to opt into user paths.
+		/// </summary>
+		public static bool UseSystemPath(IConfiguration configuration, string sectionKey)
+			=> !configuration.GetValue<bool>($"{sectionKey}:userMode");
 
 		/// <summary>
 		/// Converts a path to an absolute path. Relative paths are resolved against <see cref="Environment.CurrentDirectory"/>.
@@ -88,6 +95,38 @@ namespace Albatross.Config {
 			ConfigRoot = string.IsNullOrEmpty(value) ? GetDefaultPath(useSystemPath, [..subFolders, "config"]) : GetAbsolutePath(value);
 			value = configuration.GetSection($"{sectionKey}:logRoot").Value;
 			LogRoot = string.IsNullOrEmpty(value) ? GetDefaultPath(useSystemPath, [..subFolders, "log"]) : GetAbsolutePath(value);
+		}
+
+		/// <summary>
+		/// Creates an <see cref="ApplicationPath"/> from an existing <paramref name="configuration"/>, deriving the
+		/// system-vs-user path mode from the <c>{sectionKey}:userMode</c> setting via <see cref="UseSystemPath"/>.
+		/// </summary>
+		/// <param name="subFolders">
+		/// Sub-folder segments appended to the OS base directory to form the default root (e.g. <c>["mycompany", "myapp"]</c>).
+		/// Each of <c>data</c>, <c>config</c>, and <c>log</c> is then appended as the final segment.
+		/// </param>
+		/// <param name="sectionKey">
+		/// The configuration section key used to look up <c>userMode</c> and the path overrides
+		/// (<c>dataRoot</c>, <c>configRoot</c>, <c>logRoot</c>).
+		/// </param>
+		public ApplicationPath(IConfiguration configuration, string[] subFolders, string sectionKey) : this(configuration, UseSystemPath(configuration, sectionKey), subFolders, sectionKey) {
+		}
+
+		/// <summary>
+		/// Creates an <see cref="ApplicationPath"/> by building configuration from environment variables and
+		/// command-line arguments, then deriving the system-vs-user path mode from the <c>{sectionKey}:userMode</c> setting.
+		/// </summary>
+		/// <param name="subFolders">
+		/// Sub-folder segments appended to the OS base directory to form the default root (e.g. <c>["mycompany", "myapp"]</c>).
+		/// Each of <c>data</c>, <c>config</c>, and <c>log</c> is then appended as the final segment.
+		/// </param>
+		/// <param name="sectionKey">
+		/// The configuration section key used to look up <c>userMode</c> and the path overrides
+		/// (<c>dataRoot</c>, <c>configRoot</c>, <c>logRoot</c>).
+		/// </param>
+		/// <param name="commandlineArgs">The command-line arguments passed to the application (i.e. <c>args</c> from <c>Main</c>).</param>
+		public ApplicationPath(string[] subFolders, string sectionKey, string[] commandlineArgs)
+			: this(new ConfigurationBuilder().AddEnvironmentVariables().AddCommandLine(commandlineArgs).Build(), subFolders, sectionKey) {
 		}
 
 		public bool IsSystemPath { get; }
