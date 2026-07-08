@@ -9,7 +9,7 @@
 		<PublishSingleFile>true</PublishSingleFile>
 	</PropertyGroup>
 	<ItemGroup>
-		<PackageReference Include="Albatross.CommandLine" Version="8.0.0" />
+		<PackageReference Include="Albatross.CommandLine" Version="8.0.14" />
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\Albatross.Config\Albatross.Config.csproj" />
