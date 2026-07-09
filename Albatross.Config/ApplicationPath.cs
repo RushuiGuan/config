@@ -3,15 +3,30 @@ using System;
 using System.IO;
 
 namespace Albatross.Config {
-	public interface IApplicationPath {
-		bool IsSystemPath { get; }
-		string DataRoot { get; }
-		string ConfigRoot { get; }
-		string LogRoot { get; }
-		void Init();
-	}
-
+	/// <summary>
+	/// An <see cref="IApplicationPath"/> that roots each of the data, config, and log directories under the
+	/// OS-standard location for application state, following the cross-platform convention used by installed
+	/// commercial software.
+	/// </summary>
+	/// <remarks>
+	/// This is the general-purpose implementation, intended for applications that keep their data, configuration,
+	/// and logs in separate, well-known per-application directories rather than beside the binary. Each root is
+	/// built as <c>{OS base}/{subFolders}/{data|config|log}</c>, where the OS base is chosen by
+	/// <see cref="IsSystemPath"/>:
+	/// <list type="bullet">
+	///   <item><description>System mode — machine-wide state (<c>C:\ProgramData</c>, <c>/var/lib</c>, <c>/Library/Application Support</c>); the default, and typically requires elevated permissions to write.</description></item>
+	///   <item><description>User mode — per-user state (<c>%LOCALAPPDATA%</c>, <c>~/.config</c>); opted into via <c>{sectionKey}:userMode</c>.</description></item>
+	/// </list>
+	/// Any individual root can be overridden per application through the <c>configRoot</c>, <c>dataRoot</c>, and
+	/// <c>logRoot</c> configuration keys (see the constructors). For the enterprise pattern where configuration
+	/// ships next to the binary and data/log come from shared machine-wide directories, use
+	/// <c>EnterpriseApplicationPath</c> instead.
+	/// </remarks>
 	public class ApplicationPath : IApplicationPath {
+		/// <summary>
+		/// Returns the OS-standard root for machine-wide (system) application state:
+		/// <c>C:\ProgramData</c> on Windows, <c>/Library/Application Support</c> on macOS, and <c>/var/lib</c> on Linux.
+		/// </summary>
 		public static string GetSystemRootPath() {
 			if (System.OperatingSystem.IsWindows()) {
 				// windows: c:\ProgramData
@@ -25,6 +40,10 @@ namespace Albatross.Config {
 			}
 		}
 
+		/// <summary>
+		/// Returns the OS-standard root for per-user application state:
+		/// <c>%LOCALAPPDATA%</c> on Windows and the user's application-data folder (e.g. <c>~/.config</c>) on macOS/Linux.
+		/// </summary>
 		public static string GetUserRootPath() {
 			if (System.OperatingSystem.IsWindows()) {
 				// windows: ~\AppData\Local
@@ -36,6 +55,11 @@ namespace Albatross.Config {
 			}
 		}
 
+		/// <summary>
+		/// Joins <paramref name="subFolders"/> onto the system or user OS root (per <paramref name="useSystemPath"/>)
+		/// to form a default root path.
+		/// </summary>
+		/// <param name="useSystemPath">When <c>true</c>, builds on <see cref="GetSystemRootPath"/>; otherwise on <see cref="GetUserRootPath"/>.</param>
 		public static string GetDefaultPath(bool useSystemPath, string[] subFolders) {
 			if (useSystemPath) {
 				return Path.Join([GetSystemRootPath(), .. subFolders]);
@@ -111,6 +135,28 @@ namespace Albatross.Config {
 			: this(new ConfigurationBuilder().AddEnvironmentVariables().AddCommandLine(commandlineArgs).Build(), useSystemPath, subFolders, sectionKey, subSectionKey) {
 		}
 
+		/// <summary>
+		/// The core constructor all other overloads chain to. For each of <c>configRoot</c>, <c>dataRoot</c>, and
+		/// <c>logRoot</c>, an override read from <paramref name="configuration"/> takes precedence (resolved to an
+		/// absolute path); otherwise the root defaults to <c>{OS base}/{subFolders}/{config|data|log}</c>.
+		/// </summary>
+		/// <param name="useSystemPath">
+		/// When <c>true</c>, roots are built under the machine-wide OS base (e.g. <c>C:\ProgramData</c>, <c>/var/lib</c>);
+		/// when <c>false</c>, under the per-user OS base (e.g. <c>%LOCALAPPDATA%</c>, <c>~/.config</c>).
+		/// </param>
+		/// <param name="subFolders">
+		/// Sub-folder segments appended to the OS base directory to form the default root (e.g. <c>["mycompany", "myapp"]</c>).
+		/// Each of <c>data</c>, <c>config</c>, and <c>log</c> is then appended as the final segment.
+		/// </param>
+		/// <param name="sectionKey">
+		/// The configuration section key used to look up the path overrides (e.g. <c>"myapp"</c> maps to
+		/// <c>myapp:dataRoot</c>, <c>myapp:configRoot</c>, <c>myapp:logRoot</c>).
+		/// </param>
+		/// <param name="subSectionKey">
+		/// An optional nested section under <paramref name="sectionKey"/> that groups the path overrides (e.g. <c>"myapp"</c>
+		/// with <c>"paths"</c> maps to <c>myapp:paths:dataRoot</c>). When <c>null</c> or empty, overrides are read directly
+		/// under <paramref name="sectionKey"/>.
+		/// </param>
 		public ApplicationPath(IConfiguration configuration, bool useSystemPath, string[] subFolders, string sectionKey, string? subSectionKey) {
 			this.IsSystemPath = useSystemPath;
 			var value = GetConfigValue(configuration, sectionKey, subSectionKey, "configRoot");
@@ -166,9 +212,16 @@ namespace Albatross.Config {
 			: this(new ConfigurationBuilder().AddEnvironmentVariables().AddCommandLine(commandlineArgs).Build(), subFolders, sectionKey, subSectionKey) {
 		}
 
+		/// <summary><c>true</c> when roots are built under the machine-wide OS base; <c>false</c> when under the per-user base.</summary>
 		public bool IsSystemPath { get; }
+
+		/// <summary>The resolved data directory: the <c>dataRoot</c> override, or <c>{OS base}/{subFolders}/data</c>.</summary>
 		public string DataRoot { get; }
+
+		/// <summary>The resolved configuration directory: the <c>configRoot</c> override, or <c>{OS base}/{subFolders}/config</c>.</summary>
 		public string ConfigRoot { get; }
+
+		/// <summary>The resolved log directory: the <c>logRoot</c> override, or <c>{OS base}/{subFolders}/log</c>.</summary>
 		public string LogRoot { get; }
 
 		private void EnsureDirectory(string path) {
@@ -182,6 +235,14 @@ namespace Albatross.Config {
 			}
 		}
 
+		/// <summary>
+		/// Creates the data, config, and log directories if they do not already exist. In user mode on non-Windows
+		/// platforms each directory is restricted to owner-only access (<c>rwx------</c>).
+		/// </summary>
+		/// <exception cref="UnauthorizedAccessException">
+		/// Thrown in system mode when a directory cannot be created because the process lacks the required
+		/// permissions. In user mode this condition is ignored.
+		/// </exception>
 		public void Init() {
 			EnsureDirectory(this.DataRoot);
 			EnsureDirectory(this.ConfigRoot);
