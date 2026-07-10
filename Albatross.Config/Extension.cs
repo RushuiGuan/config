@@ -1,7 +1,6 @@
-﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Albatross.Config {
 	// the class name Extension cannot be renamed to Extensions (standard) because of backward compability reason.
@@ -16,7 +15,7 @@ namespace Albatross.Config {
 		/// <param name="services">The ServiceCollection instance</param>
 		/// <param name="singleton"></param>
 		/// <returns>The service collection instance</returns>
-		public static IServiceCollection AddConfig<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)] T>(this IServiceCollection services,
+		public static IServiceCollection AddConfig<T>(this IServiceCollection services,
 			bool singleton = true) where T : ConfigBase {
 			if (singleton) {
 				services.TryAddSingleton<T>(provider => Factory<T>.CreateAndValidate(provider.GetRequiredService<IConfiguration>()));
@@ -34,7 +33,7 @@ namespace Albatross.Config {
 		/// <typeparam name="TInterface"></typeparam>
 		/// <typeparam name="T"></typeparam>
 		/// <returns></returns>
-		public static IServiceCollection AddConfig<TInterface, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)] T>(
+		public static IServiceCollection AddConfig<TInterface, T>(
 			this IServiceCollection services,
 			bool singleton = true)
 			where T : ConfigBase, TInterface
@@ -60,10 +59,10 @@ namespace Albatross.Config {
 		const string Slash = "/";
 
 		/// <summary>
-		/// For C# the HttpClient class will remove any relative path if the BaseUrl does not end with a slash.  For example: http://localhost/beezy will become 
+		/// For C# the HttpClient class will remove any relative path if the BaseUrl does not end with a slash.  For example: http://localhost/beezy will become
 		/// http://localhost unless base url is set as http://localhost/beezy/
 		/// For the request url, if it starts with a slash, it will be considered as a root url.  By default, we shouldn't use any slash in the request url.
-		/// The call will append Slack '/' to the endpoint by default if it doesn't already end with it.  If this behavior is not desired, set ensureTrailingSlash 
+		/// The call will append Slack '/' to the endpoint by default if it doesn't already end with it.  If this behavior is not desired, set ensureTrailingSlash
 		/// to false
 		/// </summary>
 		/// <param name="configuration"></param>
