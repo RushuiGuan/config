@@ -243,9 +243,9 @@ namespace Albatross.Config {
 		/// Thrown in system mode when a directory cannot be created because the process lacks the required
 		/// permissions. In user mode this condition is ignored.
 		/// </exception>
-		public void Init() {
-			EnsureDirectory(this.DataRoot);
+		public virtual void Init() {
 			EnsureDirectory(this.ConfigRoot);
+			EnsureDirectory(this.DataRoot);
 			EnsureDirectory(this.LogRoot);
 		}
 	}
