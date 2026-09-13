@@ -6,6 +6,9 @@
 * `ApplicationPath.Init()` is now `virtual`, allowing derived types to extend or replace the directory setup — for example to create additional application folders — while still calling `base.Init()`.
 * `Init()` creates the roots in `ConfigRoot`, `DataRoot`, `LogRoot` order.
 
+### Dependency Updates
+* `Microsoft.Extensions.*` packages updated from `10.0.9` to `10.0.12` to pick up the latest servicing patches.
+
 ## Version 8.0.0
 
 ### Breaking Changes
